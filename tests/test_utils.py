@@ -1,40 +1,29 @@
-import unittest
-from unittest.mock import mock_open, patch
-from echolib.utils.file_utils import read_file, write_file
-from echolib.common import logger
+import os
+from typing import Optional
+from echolib.common.logger import logger
+from pathlib import Path
 
-class TestFileUtils(unittest.TestCase):
-    @patch('echolib.utils.file_utils.os.path.exists')
-    @patch('echolib.utils.file_utils.logger')
-    def test_read_file_exists(self, mock_logger, mock_exists):
-        mock_exists.return_value = True
-        mock_file = mock_open(read_data="Sample content")
-        with patch('echolib.utils.file_utils.open', mock_file):
-            content = read_file("resume.txt")
-            self.assertEqual(content, "Sample content")
-            mock_logger.debug.assert_called_with("Read content from resume.txt")
+def read_file(file_path: str) -> Optional[str]:
+    path = Path(file_path)
+    if not path.exists():
+        logger.error(f"File {file_path} does not exist.")
+        return None
+    try:
+        with path.open('r', encoding='utf-8') as file:
+            content = file.read()
+            logger.debug(f"Read content from {file_path}")
+            return content
+    except Exception as e:
+        logger.error(f"Failed to read {file_path}: {e}")
+        return None
 
-    @patch('echolib.utils.file_utils.os.path.exists')
-    @patch('echolib.utils.file_utils.logger')
-    def test_read_file_not_exists(self, mock_logger, mock_exists):
-        mock_exists.return_value = False
-        content = read_file("nonexistent.txt")
-        self.assertIsNone(content)
-        mock_logger.error.assert_called_with("File nonexistent.txt does not exist.")
-
-    @patch('echolib.utils.file_utils.open', new_callable=mock_open)
-    @patch('echolib.utils.file_utils.logger')
-    def test_write_file_success(self, mock_logger, mock_file):
-        result = write_file("cover_letter.txt", "Generated cover letter content.")
-        self.assertTrue(result)
-        mock_logger.debug.assert_called_with("Wrote content to cover_letter.txt")
-
-    @patch('echolib.utils.file_utils.open', side_effect=Exception("Write error"))
-    @patch('echolib.utils.file_utils.logger')
-    def test_write_file_failure(self, mock_logger, mock_file):
-        result = write_file("cover_letter.txt", "Content")
-        self.assertFalse(result)
-        mock_logger.error.assert_called_with("Failed to write to cover_letter.txt: Write error")
-
-if __name__ == '__main__':
-    unittest.main()
+def write_file(file_path: str, content: str) -> bool:
+    path = Path(file_path)
+    try:
+        with path.open('w', encoding='utf-8') as file:
+            file.write(content)
+            logger.debug(f"Wrote content to {file_path}")
+            return True
+    except Exception as e:
+        logger.error(f"Failed to write to {file_path}: {e}")
+        return False

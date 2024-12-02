@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from common.logger import logger
+from echolib.common.logger import logger
 
 def read_file(file_path: str) -> Optional[str]:
     if not os.path.exists(file_path):

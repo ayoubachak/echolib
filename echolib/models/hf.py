@@ -243,10 +243,10 @@ class HuggingFaceModel(BaseModel):
         return cls(api_url=api_url, headers=headers, config=config_dict)
 
 if __name__ == '__main__':
-    config_path = "configs/huggingface.config.json"
+    config_path = "models/configs/huggingface.config.json"
     hf_model = HuggingFaceModel.setup_from_config(config_path)
     sys_msg = "You are a helpful coding assistant that gives correct code."
-    usr_msg = "Give me a fibbonacci function using rust, write the response in a code Block"
+    usr_msg = "Give me a fibonacci function using Rust, write the response in a code block"
     result = hf_model.sys_inference(sys_prompt=sys_msg, usr_prompt=usr_msg)
     logger.info(f"System inference result: {result}")
     print(result)

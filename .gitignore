@@ -4,3 +4,4 @@ tokens.json
 *.txt
 context.md
 config.gcont.yml
+.vscode/

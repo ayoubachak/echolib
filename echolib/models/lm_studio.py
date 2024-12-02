@@ -74,7 +74,7 @@ class LMStudioModel(BaseModel):
         logger.info(f"System inference with system prompt: {sys_prompt[:20]} and user prompt: {usr_prompt[:20]}")
         chat_completion = self.client.chat.completions.create(
             messages=[
-                {"role": "system", "content": sys_prompt},
+                {"role": "assistant", "content": sys_prompt},
                 {"role": "user", "content": usr_prompt.strip()},
             ],
             model="local-model",  # Adjust if needed
@@ -147,7 +147,7 @@ class LMStudioModel(BaseModel):
         return cls(api_url=api_url, headers=headers, config=config_dict)
 
 if __name__ == '__main__':
-    config_path = "configs/lm_studio.config.json"
+    config_path = "models/configs/lm_studio.config.json"
     lm_studio = LMStudioModel.setup_from_config(config_path)
     result = lm_studio.sys_inference(sys_prompt="You are a helpful assistant", usr_prompt="Hello there", seed=42)
     logger.info(f"System inference result: {result}")

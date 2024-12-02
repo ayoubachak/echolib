@@ -2,106 +2,246 @@ import unittest
 from unittest.mock import patch, MagicMock
 from echolib.models.hf import HuggingFaceModel
 from echolib.models.lm_studio import LMStudioModel
-from echolib.common import globals_
+from echolib.common.models import HFToken, ModelPreset
 
 class TestHuggingFaceModel(unittest.TestCase):
-    def setUp(self):
-        # Setup a HuggingFaceModel instance with mock data
-        self.mock_config = {
-            "api_url": "https://api-inference.huggingface.co/models",
-            "headers": {
-                "Authorization": "Bearer MOCK_API_KEY",
-                "Content-Type": "application/json"
-            },
-            "model_huggingface_id": "mock/model-id",
-            "default_parameters": {
-                "max_length": -1,
-                "max_new_tokens": 100,
-                "temperature": 0.7,
-                "use_cache": True,
-                "wait_for_model": True
-            }
-        }
-        self.model = HuggingFaceModel(api_url=self.mock_config["api_url"], headers=self.mock_config["headers"], config=self.mock_config)
 
     @patch('echolib.models.hf.requests.post')
     def test_generate_text_success(self, mock_post):
-        # Mock successful API response
+        # Mock a successful HTTP response
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.iter_lines.return_value = [b'{"generated_text": "Test response"}']
+        mock_response.iter_lines.return_value = [b'{"generated_text": "Hello world"}']
         mock_post.return_value = mock_response
 
-        response = self.model.generate_text("Test prompt", {"max_new_tokens": 10})
+        # Initialize the model with mock configurations
+        config = {
+            "model_huggingface_id": "mock/model-id",
+            "default_parameters": {
+                "max_new_tokens": 10
+            }
+        }
+        model = HuggingFaceModel(
+            api_url="https://api-inference.huggingface.co/models",
+            headers={"Authorization": "Bearer mock_token"},
+            config=config
+        )
+
+        # Call generate_text
+        response = model.generate_text("Test prompt", {"max_new_tokens": 10})
+
+        # Assertions
+        self.assertIn("generated_text", response)
         self.assertFalse(response["error"])
-        self.assertEqual(response["generated_text"], "Test response")
-
-    @patch('echolib.models.hf.requests.post')
-    def test_generate_text_rate_limit(self, mock_post):
-        # Mock rate limit response followed by success
-        mock_response_429 = MagicMock()
-        mock_response_429.status_code = 429
-        mock_response_429.text = "Rate limit exceeded"
-
-        mock_response_200 = MagicMock()
-        mock_response_200.status_code = 200
-        mock_response_200.iter_lines.return_value = [b'{"generated_text": "Rotated token response"}']
-
-        mock_post.side_effect = [mock_response_429, mock_response_200]
-
-        response = self.model.generate_text("Test prompt", {"max_new_tokens": 10})
-        self.assertFalse(response["error"])
-        self.assertEqual(response["generated_text"], "Rotated token response")
+        self.assertEqual(response["generated_text"], "Hello world")
 
     @patch('echolib.models.hf.requests.post')
     def test_generate_text_failure(self, mock_post):
-        # Mock failure response
+        # Mock a failed HTTP response (e.g., Internal Server Error)
         mock_response = MagicMock()
         mock_response.status_code = 500
         mock_response.text = "Internal Server Error"
         mock_post.return_value = mock_response
 
-        with self.assertRaises(Exception):
-            self.model.generate_text("Test prompt", {"max_new_tokens": 10})
+        # Initialize the model with mock configurations
+        config = {
+            "model_huggingface_id": "mock/model-id",
+            "default_parameters": {
+                "max_new_tokens": 10
+            }
+        }
+        model = HuggingFaceModel(
+            api_url="https://api-inference.huggingface.co/models",
+            headers={"Authorization": "Bearer mock_token"},
+            config=config
+        )
+
+        # Call generate_text
+        response = model.generate_text("Test prompt", {"max_new_tokens": 10})
+
+        # Assertions
+        self.assertIn("error", response)
+        self.assertTrue(response["error"])
+        self.assertIn("Failed to fetch models", response["message"])
+
+    @patch('echolib.models.hf.requests.post')
+    def test_generate_text_rate_limit(self, mock_post):
+        # Mock a rate-limited HTTP response
+        mock_response = MagicMock()
+        mock_response.status_code = 429
+        mock_response.text = "Rate limit exceeded"
+        mock_post.return_value = mock_response
+
+        # Initialize the model with mock configurations
+        config = {
+            "model_huggingface_id": "mock/model-id",
+            "default_parameters": {
+                "max_new_tokens": 10
+            }
+        }
+        model = HuggingFaceModel(
+            api_url="https://api-inference.huggingface.co/models",
+            headers={"Authorization": "Bearer mock_token_1"},
+            config=config
+        )
+
+        # Add a second token for rotation
+        model.hf_tokens = [
+            HFToken(id=1, name="Token1", value="mock_token_1"),
+            HFToken(id=2, name="Token2", value="mock_token_2")
+        ]
+
+        # Call generate_text, expecting token rotation and eventual exhaustion
+        response = model.generate_text("Test prompt", {"max_new_tokens": 10})
+
+        # Assertions
+        self.assertIn("error", response)
+        self.assertTrue(response["error"])
+        self.assertIn("All tokens have been exhausted. Please wait before retrying.", response["message"])
 
 class TestLMStudioModel(unittest.TestCase):
-    def setUp(self):
-        # Setup a LMStudioModel instance with mock data
-        self.mock_config = {
+
+    @patch('echolib.models.lm_studio.OpenAI')
+    def test_sys_inference_success(self, mock_openai):
+        # Mock the OpenAI client
+        mock_client_instance = MagicMock()
+        mock_completion = MagicMock()
+        mock_completion.choices = [MagicMock(message=MagicMock(content="Hello from LM Studio"))]
+        mock_client_instance.chat.completions.create.return_value = mock_completion
+        mock_openai.return_value = mock_client_instance
+
+        # Initialize the model with mock configurations
+        config = {
             "api_url": "http://localhost:1234/v1",
-            "instructions": "You are a helpful AI Assistant made by Alten.",
             "default_parameters": {
                 "temperature": 0.7,
-                "max_tokens": 100,
+                "max_tokens": 10,
                 "stream": False
             }
         }
-        self.model = LMStudioModel(api_url=self.mock_config["api_url"], headers={}, config=self.mock_config)
+        model = LMStudioModel(
+            api_url="http://localhost:1234/v1",
+            headers={"Content-Type": "application/json"},
+            config=config
+        )
 
-    @patch('echolib.models.lm_studio.requests.post')
-    def test_generate_text_success(self, mock_post):
-        # Mock successful API response
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"choices": [{"message": {"content": "Mocked response"}}]}
-        mock_post.return_value = mock_response
+        # Call sys_inference
+        response = model.sys_inference(
+            sys_prompt="You are a helpful assistant.",
+            usr_prompt="Hello there",
+            seed=42
+        )
 
-        response = self.model.generate_text("Test prompt", {"temperature": 0.7})
-        self.assertNotIn("error", response)
-        self.assertIn("choices", response)
-        self.assertEqual(response["choices"][0]["message"]["content"], "Mocked response")
+        # Assertions
+        self.assertEqual(response, "Hello from LM Studio")
+        mock_openai.assert_called_once_with(base_url="http://localhost:1234/v1", api_key="not-needed")
+        mock_client_instance.chat.completions.create.assert_called_once()
 
-    @patch('echolib.models.lm_studio.requests.post')
-    def test_generate_text_failure(self, mock_post):
-        # Mock failure response
-        mock_response = MagicMock()
-        mock_response.status_code = 400
-        mock_response.text = "Bad Request"
-        mock_post.return_value = mock_response
+    @patch('echolib.models.lm_studio.OpenAI')
+    def test_sys_inference_failure(self, mock_openai):
+        # Mock the OpenAI client to raise an exception
+        mock_client_instance = MagicMock()
+        mock_client_instance.chat.completions.create.side_effect = Exception("Internal Server Error")
+        mock_openai.return_value = mock_client_instance
 
-        response = self.model.generate_text("Test prompt", {"temperature": 0.7})
-        self.assertIn("error", response)
-        self.assertEqual(response["error"], "400 Client Error: None for url: None")
+        # Initialize the model with mock configurations
+        config = {
+            "api_url": "http://localhost:1234/v1",
+            "default_parameters": {
+                "temperature": 0.7,
+                "max_tokens": 10,
+                "stream": False
+            }
+        }
+        model = LMStudioModel(
+            api_url="http://localhost:1234/v1",
+            headers={"Content-Type": "application/json"},
+            config=config
+        )
+
+        # Call sys_inference and expect an exception
+        with self.assertRaises(Exception) as context:
+            model.sys_inference(
+                sys_prompt="You are a helpful assistant.",
+                usr_prompt="Hello there",
+                seed=42
+            )
+
+        # Assertions
+        self.assertTrue("Internal Server Error" in str(context.exception))
+        mock_openai.assert_called_once_with(base_url="http://localhost:1234/v1", api_key="not-needed")
+        mock_client_instance.chat.completions.create.assert_called_once()
+
+    @patch('echolib.models.lm_studio.OpenAI')
+    def test_inference_success(self, mock_openai):
+        # Mock the OpenAI client for inference
+        mock_client_instance = MagicMock()
+        mock_completion = MagicMock()
+        mock_completion.choices = [MagicMock(message=MagicMock(content="Morocco gained independence on November 18, 1956."))]
+        mock_client_instance.chat.completions.create.return_value = mock_completion
+        mock_openai.return_value = mock_client_instance
+
+        # Initialize the model with mock configurations
+        config = {
+            "api_url": "http://localhost:1234/v1",
+            "default_parameters": {
+                "temperature": 0.7,
+                "max_tokens": 10,
+                "stream": False
+            }
+        }
+        model = LMStudioModel(
+            api_url="http://localhost:1234/v1",
+            headers={"Content-Type": "application/json"},
+            config=config
+        )
+
+        # Call inference
+        response = model.inference(
+            prompt="What's the independence date of Morocco?",
+            seed=42
+        )
+
+        # Assertions
+        self.assertEqual(response, "Morocco gained independence on November 18, 1956.")
+        mock_openai.assert_called_once_with(base_url="http://localhost:1234/v1", api_key="not-needed")
+        mock_client_instance.chat.completions.create.assert_called_once()
+
+    @patch('echolib.models.lm_studio.OpenAI')
+    def test_inference_failure(self, mock_openai):
+        # Mock the OpenAI client to raise an exception
+        mock_client_instance = MagicMock()
+        mock_client_instance.chat.completions.create.side_effect = Exception("Internal Server Error")
+        mock_openai.return_value = mock_client_instance
+
+        # Initialize the model with mock configurations
+        config = {
+            "api_url": "http://localhost:1234/v1",
+            "default_parameters": {
+                "temperature": 0.7,
+                "max_tokens": 10,
+                "stream": False
+            }
+        }
+        model = LMStudioModel(
+            api_url="http://localhost:1234/v1",
+            headers={"Content-Type": "application/json"},
+            config=config
+        )
+
+        # Call inference and expect an exception
+        with self.assertRaises(Exception) as context:
+            model.inference(
+                prompt="What's the independence date of Morocco?",
+                seed=42
+            )
+
+        # Assertions
+        self.assertTrue("Internal Server Error" in str(context.exception))
+        mock_openai.assert_called_once_with(base_url="http://localhost:1234/v1", api_key="not-needed")
+        mock_client_instance.chat.completions.create.assert_called_once()
+
+    # Removed test_generate_text_rate_limit for LMStudioModel as it does not apply
 
 if __name__ == '__main__':
     unittest.main()
