@@ -1,4 +1,4 @@
-from common.models import HFToken, ModelPreset, HFModel
+from echolib.common.models import HFToken, ModelPreset, HFModel
 from .logger import logger
 import json
 
