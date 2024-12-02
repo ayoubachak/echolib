@@ -5,3 +5,4 @@ tokens.json
 context.md
 config.gcont.yml
 .vscode/
+dist/
