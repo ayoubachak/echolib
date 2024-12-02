@@ -1,0 +1,86 @@
+[
+    {
+        "id" : 1,
+        "name" : "Mistral v0.2 ( HuggingFace )",
+        "type" : "HUGGINGFACE",
+        "kwargs" : {
+            "api_url": "https://api-inference.huggingface.co/models",
+            "headers": {
+                "Authorization": "Bearer YOUR_API_KEY",
+                "Content-Type": "application/json"
+            },
+            "model_huggingface_id": "mistralai/Mistral-7B-Instruct-v0.2",
+            "default_parameters": {
+                "max_length": -1,
+                "max_new_tokens": 250,
+                "temperature": 1e-8,
+                "use_cache": true,
+                "wait_for_model": true
+            }
+        },
+        "preset" : 1
+    },
+    {
+        "id" : 2,
+        "name" : "Mistral v0.3 ( HuggingFace )",
+        "type" : "HUGGINGFACE",
+        "kwargs" : {
+            "api_url": "https://api-inference.huggingface.co/models",
+            "headers": {
+                "Authorization": "Bearer YOUR_API_KEY",
+                "Content-Type": "application/json"
+            },
+            "model_huggingface_id": "mistralai/Mistral-7B-Instruct-v0.3",
+            "default_parameters": {
+                "max_length": -1,
+                "max_new_tokens": 250,
+                "temperature": 1e-8,
+                "use_cache": true,
+                "wait_for_model": true
+            }
+        },
+        "preset" : 1
+    },
+    {
+        "id" : 3,
+        "name" : "Phi 3 mini ( HuggingFace )",
+        "type" : "HUGGINGFACE",
+        "kwargs" : {
+            "api_url": "https://api-inference.huggingface.co/models",
+            "headers": {
+                "Authorization": "Bearer YOUR_API_KEY",
+                "Content-Type": "application/json"
+            },
+            "model_huggingface_id": "microsoft/Phi-3-mini-4k-instruct",
+            "default_parameters": {
+                "max_length": -1,
+                "max_new_tokens": 250,
+                "temperature": 1e-8,
+                "use_cache": true,
+                "wait_for_model": true
+            }
+        },
+        "preset" : 2
+    },
+    {
+        "id" : 4,
+        "name" : "Mixtral-8x7B ( HuggingFace )",
+        "type" : "HUGGINGFACE",
+        "kwargs" : {
+            "api_url": "https://api-inference.huggingface.co/models",
+            "headers": {
+                "Authorization": "Bearer YOUR_API_KEY",
+                "Content-Type": "application/json"
+            },
+            "model_huggingface_id": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            "default_parameters": {
+                "max_length": -1,
+                "max_new_tokens": 250,
+                "temperature": 1e-8,
+                "use_cache": true,
+                "wait_for_model": true
+            }
+        },
+        "preset" : 1
+    }
+]

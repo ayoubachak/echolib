@@ -1,0 +1,6 @@
+__pycache__/
+venv/
+tokens.json
+*.txt
+context.md
+config.gcont.yml
