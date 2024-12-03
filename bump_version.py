@@ -9,7 +9,7 @@ def bump_version(bump_type):
     # Ensure bump2version is installed
     try:
         subprocess.run(['bump2version', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         print("bump2version not found. Installing...")
         subprocess.run(['pip', 'install', '--upgrade', 'bump2version'], check=True)
     

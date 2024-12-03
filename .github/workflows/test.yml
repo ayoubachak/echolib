@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - main
-      
+          
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -23,13 +23,12 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Ensure configs directory exists
-        run: mkdir -p echolib/models/configs/
+      - name: Set ECHOLIB_CONFIG_DIR Environment Variable
+        # Optional: If your library uses a custom config directory via env variable
+        run: echo "ECHOLIB_CONFIG_DIR=$(pwd)/echolib/custom_configs" >> $GITHUB_ENV
 
-      - name: Install the package in editable mode
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .
+      - name: Ensure configs directory exists
+        run: mkdir -p echolib/custom_configs
 
       - name: Create mock tokens.json
         env:
@@ -53,7 +52,75 @@ jobs:
               "name": "Token3",
               "value": "'"$HF_TOKEN_3"'"
             }
-          ]' > echolib/models/configs/tokens.json
+          ]' > echolib/custom_configs/tokens.json
+
+      - name: Create mock presets.json
+        run: |
+          echo '[
+            {
+              "id" : 1,
+              "name" : "Test Preset 1",
+              "input_prefix" : "[TEST_INST]",
+              "input_suffix" : "[/TEST_INST]",
+              "antiprompt" : "[TEST_INST]",
+              "pre_prompt" : "",
+              "pre_prompt_prefix" : "",
+              "pre_prompt_suffix" : ""
+            },
+            {
+              "id" : 2,
+              "name" : "Test Preset 2",
+              "input_prefix" : "<|user|>\n",
+              "input_suffix" : "<|end|>\n<|assistant|>\n",
+              "antiprompt" : "\"<|end|>\",  \"<|assistant|>\"",
+              "pre_prompt" : "",
+              "pre_prompt_prefix" : "<|end|>\n",
+              "pre_prompt_suffix" : "<|system|>\n"
+            }
+          ]' > echolib/custom_configs/presets.json
+
+      - name: Create mock hf_models.json
+        run: |
+          echo '[
+            {
+              "id" : 1,
+              "name" : "Test Model 1",
+              "type" : "HUGGINGFACE",
+              "kwargs" : {
+                "api_url": "https://api-inference.huggingface.co/models",
+                "headers": {
+                  "Authorization": "Bearer MOCK_HF_TOKEN",
+                  "Content-Type": "application/json"
+                },
+                "model_huggingface_id": "mistralai/Mistral-7B-Instruct-v0.2",
+                "default_parameters": {
+                  "max_length": -1,
+                  "max_new_tokens": 250,
+                  "temperature": 1e-8,
+                  "use_cache": true,
+                  "wait_for_model": true
+                }
+              },
+              "preset" : 1
+            }
+          ]' > echolib/custom_configs/hf_models.json
+
+      - name: Create mock lm_studio.config.json
+        run: |
+          echo '{
+              "api_url": "http://localhost:1234/v1",
+              "instructions": "You are a helpful AI Assistant.",
+              "default_parameters":{
+                  "temperature": 0.7,
+                  "max_tokens": -1,
+                  "stream": false
+              }
+          }' > echolib/custom_configs/lm_studio.config.json
+
+      - name: Install the package in editable mode
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
 
       - name: Install pytest
         run: |
