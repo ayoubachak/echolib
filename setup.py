@@ -21,6 +21,7 @@ setup(
         "pyfiglet",
         "termcolor",
         "openai",
+        "appdirs"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

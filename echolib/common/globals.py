@@ -11,20 +11,33 @@ class Globals:
 
         Args:
             config_dir (str, optional): Path to the configuration directory.
-                                         If None, defaults to the 'configs' directory within the package.
+                                         If None, checks the ECHOLIB_CONFIG_DIR environment variable.
+                                         If still None, defaults to the 'configs' directory outside the package.
         """
         if config_dir:
             self.config_dir = Path(config_dir)
         else:
-            # Determine the path relative to the current file
-            self.config_dir = Path(__file__).parent.parent / 'models' / 'configs'
-        
+            # Check environment variable
+            env_config_dir = os.getenv('ECHOLIB_CONFIG_DIR')
+            if env_config_dir:
+                self.config_dir = Path(env_config_dir)
+            else:
+                # Default to user's config directory
+                from appdirs import user_config_dir
+                default_dir = Path(user_config_dir("echolib"))
+                self.config_dir = default_dir
+
+        logger.info(f"Using configuration directory: {self.config_dir}")
+
         self.tokens = self.load_tokens()
         self.presets = self.load_presets()
         self.hf_models = self.load_hf_models()
 
     def load_tokens(self) -> list[HFToken]:
         tokens_path = self.config_dir / 'tokens.json'
+        if not tokens_path.exists():
+            logger.error(f"tokens.json not found in {self.config_dir}. Please initialize your configuration.")
+            return []
         try:
             with open(tokens_path, 'r') as file:
                 tokens = json.load(file)

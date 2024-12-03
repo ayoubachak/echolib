@@ -1,0 +1,10 @@
+{
+    "api_url": "http://localhost:1234/v1",
+    "instructions": "You are a helpful AI Assistant made by Alten.",
+    "default_parameters":{
+        "temperature": 0.7,
+        "max_tokens": -1,
+        "stream": false
+    }
+}
+  

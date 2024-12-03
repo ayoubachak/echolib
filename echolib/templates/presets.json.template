@@ -1,0 +1,22 @@
+[
+    {
+        "id" : 1,
+        "name" : "Mistral Instruct",
+        "input_prefix" : "[INST]",
+        "input_suffix" : "[/INST]",
+        "antiprompt" : "[INST]",
+        "pre_prompt" : "",
+        "pre_prompt_prefix" : "",
+        "pre_prompt_suffix" : ""
+    },
+    {
+        "id" : 2,
+        "name" : "Phi 3",
+        "input_prefix" : "<|user|>\n",
+        "input_suffix" : "<|end|>\n<|assistant|>\n",
+        "antiprompt" : "\"<|end|>\",  \"<|assistant|>\"",
+        "pre_prompt" : "",
+        "pre_prompt_prefix" : "<|end|>\n",
+        "pre_prompt_suffix" : "<|system|>\n"
+    }
+]

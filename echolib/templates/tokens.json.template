@@ -1,0 +1,17 @@
+[
+    {
+        "id": 1,
+        "name": "Token1",
+        "value": "YOUR_FIRST_HF_TOKEN"
+    },
+    {
+        "id": 2,
+        "name": "Token2",
+        "value": "YOUR_SECOND_HF_TOKEN"
+    },
+    {
+        "id": 3,
+        "name": "Token3",
+        "value": "YOUR_THIRD_HF_TOKEN"
+    }
+]
