@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="echolib",
-    version="0.1.5",
+    version="0.2.0",
     author="Ayoub Achak",
     author_email="ayoub.achak01@example.com",
     description="An AI-driven library for generating content using HuggingFace and LMStudio models.",
