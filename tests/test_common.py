@@ -1,10 +1,10 @@
 import unittest
-from echolib.common import globals_, HFToken, ModelPreset
+from echolib.common import config_manager, HFToken, ModelPreset
 from echolib.common.models import HFModel
 
 class TestCommon(unittest.TestCase):
-    def test_globals_load_tokens(self):
-        tokens = globals_.tokens
+    def test_config_manager_load_tokens(self):
+        tokens = config_manager.tokens
         self.assertIsInstance(tokens, list)
         for token in tokens:
             self.assertIsInstance(token, HFToken)
@@ -12,16 +12,16 @@ class TestCommon(unittest.TestCase):
             self.assertIsInstance(token.name, str)
             self.assertIsInstance(token.value, str)
 
-    def test_globals_load_presets(self):
-        presets = globals_.presets
+    def test_config_manager_load_presets(self):
+        presets = config_manager.presets
         self.assertIsInstance(presets, list)
         for preset in presets:
             self.assertIsInstance(preset, ModelPreset)
             self.assertIsInstance(preset.id, int)
             self.assertIsInstance(preset.name, str)
 
-    def test_globals_load_hf_models(self):
-        hf_models = globals_.hf_models
+    def test_config_manager_load_hf_models(self):
+        hf_models = config_manager.hf_models
         self.assertIsInstance(hf_models, list)
         for model in hf_models:
             self.assertIsInstance(model, HFModel)

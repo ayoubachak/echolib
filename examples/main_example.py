@@ -1,11 +1,13 @@
-from echolib import ai_models
+# examples/main_example.py
+
+from echolib import model_manager
 from echolib.common.logger import logger
 from echolib.models.base import BaseModel
 from time import time
-from pathlib import Path
 
 def main():
-    model: BaseModel = list(ai_models.models.values())[-1]  # Assuming LMStudioModel is last
+    model: BaseModel = model_manager.get_model("LM Studio")
+    assert model is not None, "LM Studio model not loaded."
     result = model.sys_inference(
         sys_prompt="You are an intelligent assistant, genius in geography and history, and concise.",
         usr_prompt="What's the independence date of Morocco?",

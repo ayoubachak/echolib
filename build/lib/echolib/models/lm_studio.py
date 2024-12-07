@@ -2,6 +2,7 @@ import requests
 from typing import Any, Dict
 from openai import OpenAI
 import json
+from echolib.common.config_manager import ConfigManager
 from echolib.common.logger import logger
 from .base import BaseModel
 import time
@@ -139,7 +140,7 @@ class LMStudioModel(BaseModel):
         return cls(api_url=api_url, headers=headers, config=config)
 
     @classmethod
-    def setup_from_dict(cls, config_dict: Dict[str, Any]) -> 'LMStudioModel':
+    def setup_from_dict(cls, config_dict: Dict[str, Any], config_manager: ConfigManager) -> 'LMStudioModel':
         api_url = config_dict.get("api_url", "http://localhost:1234/v1")
         headers = {"Content-Type": "application/json"}
         headers.update(config_dict.get("headers", {}))

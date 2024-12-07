@@ -1,5 +1,8 @@
-from .common import logger, globals_
-from .models import ai_models
+# echolib/__init__.py
+
+from echolib.common.config_manager import config_manager
+from echolib.models.model_manager import model_manager
+from echolib.common.logger import logger
 
 __version__ = "0.1.5"
-__all__ = ["logger", "globals_", "ai_models"]
+__all__ = ["config_manager", "model_manager", "logger"]

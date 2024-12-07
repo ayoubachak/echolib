@@ -3,16 +3,18 @@ import requests
 import json
 from typing import Any, Dict
 from transformers import PreTrainedTokenizerFast
-from echolib.common import globals_, HFToken, ModelPreset
+from echolib.common import HFToken, ModelPreset
 from echolib.common.logger import logger
+from echolib.common.config_manager import ConfigManager, config_manager
 from .base import BaseModel
 
 class HuggingFaceModel(BaseModel):
-    def __init__(self, api_url: str, headers: Dict[str, str], config: Dict[str, Any], preset: ModelPreset | None = None, load_tokenizer: bool = False) -> None:
+    def __init__(self, api_url: str, headers: Dict[str, str], config: Dict[str, Any],
+                preset: ModelPreset | None = None, load_tokenizer: bool = False) -> None:
         super().__init__(api_url, headers, config)
         self.model_id = config.get('model_huggingface_id')
         self.api_url = f"{api_url}/{self.model_id}"
-        self.hf_tokens: list[HFToken] = globals_.load_tokens()
+        self.hf_tokens: list[HFToken] = config_manager.tokens
         self.current_token_index = 0
         self.exhausted_tokens = set()
         self.update_token(self.hf_tokens[self.current_token_index].value)
@@ -74,7 +76,7 @@ class HuggingFaceModel(BaseModel):
 
     def query(self, payload: Dict[str, Any]) -> Any:
         logger.debug("Fetching all tokens")
-        self.hf_tokens = globals_.load_tokens()
+        self.hf_tokens = config_manager.tokens
         logger.debug(f"Querying API with payload: {payload}")
         response = requests.post(self.api_url, headers=self.headers, json=payload, stream=True)
         result = ""

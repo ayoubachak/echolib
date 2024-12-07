@@ -1,13 +1,13 @@
+# echolib/utils/init_config.py
+
 import os
 from pathlib import Path
 from echolib.common.logger import logger
 from echolib.utils.file_utils import read_file, write_file
+from echolib.common.config_manager import config_manager
 
-def initialize_config(config_dir: str = None):
-    from echolib.common.globals import Globals
-    if config_dir is None:
-        config_dir = Globals().config_dir
-    config_dir = Path(config_dir)
+def initialize_config():
+    config_dir = config_manager.config_dir
     config_dir.mkdir(parents=True, exist_ok=True)
 
     templates_dir = Path(__file__).parent.parent / 'templates'

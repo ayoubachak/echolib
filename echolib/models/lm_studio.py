@@ -146,6 +146,7 @@ class LMStudioModel(BaseModel):
         logger.info("Setting up LMStudioModel from dictionary config")
         return cls(api_url=api_url, headers=headers, config=config_dict)
 
+
 if __name__ == '__main__':
     config_path = "models/configs/lm_studio.config.json"
     lm_studio = LMStudioModel.setup_from_config(config_path)
